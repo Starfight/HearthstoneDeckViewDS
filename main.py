@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+import base64
 
 from patch import *
 
@@ -17,6 +18,16 @@ client = commands.Bot(command_prefix="/",
                       intents=discord.Intents(43008))
                       #intents=discord.Intents.all())
 
+
+async def filter_deck_code(deck_code):
+    # iterate on deck_code as word separated by space to find a base64 code starting with AA
+    for word in deck_code.split():
+        if word[:2] == "AA":
+            try:
+                base64.b64decode(word)
+            except:
+                continue
+            return word
 
 async def generate_and_save(deck_code):
     image = await create_picture(deck_code)
@@ -66,9 +77,13 @@ async def on_ready():
 @app_commands.describe(deck_code="Generates picture of deck by its code."
                                  " May take a while")
 async def deck(interaction: discord.Interaction, deck_code: str):
-    await interaction.response.send_message("_Waiting for image to "
-                                            "generate... "
-                                            "It will be here soon_")
+    await interaction.response.send_message("_En attente de la génération de l'image... "
+                                            "Elle sera bientôt disponible_")
+    deck_code = await filter_deck_code(deck_code)
+    if not deck_code:
+        await interaction.edit_original_response(
+            content=":face_with_spiral_eyes: Auncun code de deck trouvé dans le message.")
+        return
     name = await generate_and_save(deck_code)
 
     if not name:
@@ -89,9 +104,13 @@ async def deck(interaction: discord.Interaction, deck_code: str):
 @app_commands.describe(deck_code="Generates picture of deck by its code."
                                  " May take a while")
 async def code(interaction: discord.Interaction, deck_code: str):
-    await interaction.response.send_message("_Waiting for image to "
-                                            "generate... "
-                                            "It will be here soon_")
+    await interaction.response.send_message("_En attente de la génération de l'image... "
+                                            "Elle sera bientôt disponible_")
+    deck_code = await filter_deck_code(deck_code)
+    if not deck_code:
+        await interaction.edit_original_response(
+            content=":face_with_spiral_eyes: Auncun code de deck trouvé dans le message.")
+        return
     name = await generate_and_save(deck_code)
 
     if not name:
