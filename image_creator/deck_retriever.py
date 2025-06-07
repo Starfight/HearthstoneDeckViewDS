@@ -8,7 +8,7 @@ async def retrieve_deck(deck_code):
     api = BlizzardAPI(CLIENT_ID, CLIENT_SECRET, proxies=PROXY)
     response = await api.get_from_code(deck_code)
     if "error" in response:
-        print("error")
+        print(f"error: {response}")
         return [0, 0, 0]
 
     duels_class = None

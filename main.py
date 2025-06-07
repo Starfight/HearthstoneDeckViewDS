@@ -8,12 +8,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from db.config import TOKEN
+from db.config import TOKEN, APP_ID
 from image_creator import create_picture
 
 client = commands.Bot(command_prefix="/",
+                      application_id=APP_ID,
                       activity=discord.Game(name="Analyzing decks"),
-                      intents=discord.Intents.default())
+                      intents=discord.Intents(43008))
+                      #intents=discord.Intents.all())
 
 
 async def generate_and_save(deck_code):
@@ -49,9 +51,10 @@ async def on_ready():
 
     print("Servers connected to:")
     sum_servers, sum_members = 0, 0
-    for guild in sorted(client.guilds, key=lambda cl: cl.member_count):
+    print(f"test:{client.guilds}")
+    for guild in sorted(client.guilds, key=lambda cl: cl.member_count or 0):
         sum_servers += 1
-        sum_members += guild.member_count
+        sum_members += guild.member_count or 0
         print(guild.name, "-----", guild.member_count, "members")
 
     print(f"ALL: {sum_servers} servers, {sum_members} members")
@@ -68,8 +71,13 @@ async def deck(interaction: discord.Interaction, deck_code: str):
                                             "It will be here soon_")
     name = await generate_and_save(deck_code)
 
+    if not name:
+        await interaction.edit_original_response(
+            content=":face_with_spiral_eyes: Erreur lors de la génération de l'image, veuillez réessayer.")
+        return
+
     await interaction.edit_original_response(
-        content="",
+        content=deck_code,
         attachments=[discord.File(f"{name}.png")]
     )
 
@@ -86,8 +94,13 @@ async def code(interaction: discord.Interaction, deck_code: str):
                                             "It will be here soon_")
     name = await generate_and_save(deck_code)
 
+    if not name:
+        await interaction.edit_original_response(
+            content=":face_with_spiral_eyes: Erreur lors de la génération de l'image, veuillez réessayer.")
+        return
+
     await interaction.edit_original_response(
-        content="",
+        content=deck_code,
         attachments=[discord.File(f"{name}.png")]
     )
 

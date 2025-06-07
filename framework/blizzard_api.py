@@ -7,7 +7,7 @@ class BlizzardAPI:
     def __init__(self,
                  client_id,
                  client_secret,
-                 locale="en_US",
+                 locale="fr_FR",
                  url="https://us.api.blizzard.com/hearthstone",
                  proxies=None
                  ):

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+APP_ID = os.getenv('APP_ID')
 TOKEN = os.getenv("TOKEN")
 
 CLIENT_ID = os.getenv("CLIENT_ID")
