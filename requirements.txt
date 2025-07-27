@@ -11,6 +11,7 @@ greenlet==3.0.0rc3
 grequests==0.7.0
 idna==3.6
 multidict==6.0.5
+mysql-connector-python==9.4.0
 numpy==1.26.4
 pillow==10.2.0
 python-dotenv==1.0.1
