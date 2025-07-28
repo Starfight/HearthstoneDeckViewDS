@@ -9,7 +9,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from db.config import TOKEN, APP_ID
+from db.config import TOKEN, APP_ID, DB_CONFIG
+from framework.local_db import MySQLDatabase
 from image_creator import create_picture
 
 client = commands.Bot(command_prefix="/",
@@ -52,6 +53,8 @@ async def on_ready():
     print(client.user.id)
     print(discord.__version__)
     print("------")
+
+    client.db = MySQLDatabase(DB_CONFIG)
 
     try:
         synced = await client.tree.sync()
@@ -125,6 +128,16 @@ async def code(interaction: discord.Interaction, deck_code: str):
 
     os.remove(f"{name}.png")
 
+@client.tree.command(name="rank", description="Get account rank")
+@app_commands.describe(account="Get account rank")
+async def rank(interaction: discord.Interaction, account: str):
+    # get account rank from database
+    rank = await client.db.get_last_rank(account)
+    if rank is None:
+        await interaction.response.send_message(f"Compte {account} non trouvé dans la base de données.")
+    else:
+        await interaction.response.send_message(f":trophy: Dernier classement connu de {account}: {rank}")
+    
 
 @client.command(name='deck')
 async def deck(ctx, deck_code):
