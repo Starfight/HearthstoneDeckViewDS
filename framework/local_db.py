@@ -9,6 +9,7 @@ class MySQLDatabase:
         self.conn = mysql.connector.connect(**db_config)
 
     async def get_last_rank(self, accountid):
+        self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
                 SELECT rank
