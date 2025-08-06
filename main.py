@@ -10,7 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from db.config import TOKEN, APP_ID, DB_CONFIG
-from framework.local_db import MySQLDatabase
+from framework.mysql_db import MySQLDatabase
 from image_creator import create_picture
 
 client = commands.Bot(command_prefix="/",
