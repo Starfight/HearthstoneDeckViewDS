@@ -135,13 +135,15 @@ async def rank(interaction: discord.Interaction, account: str):
     # get account rank from database
     data = await client.db.get_rank_history(account)
     if not data:
-        await interaction.response.send_message(f"Compte {account} non trouvé dans la base de données.")
+        await interaction.response.send_message(f":confounded: Le compte {account} n'est pas encore légende cette saison.")
         return
     await interaction.response.send_message(f"_En attente de la génération de l'image... "
                                             "Elle sera bientôt disponible_")
     image = await place_rank_in_image(account, data)
     image.save(f"{account}.png", format="PNG")
-    await interaction.edit_original_response(attachments=[discord.File(f"{account}.png")])
+    await interaction.edit_original_response(
+        content=f":trophy: Dernier classement de {account}:",
+        attachments=[discord.File(f"{account}.png")])
     os.remove(f"{account}.png")
     
 
