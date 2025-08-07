@@ -10,7 +10,7 @@ CHART_BORDER_COLOR = '#7E5933'
 
 async def get_rank_chart(data: list) -> Image:
     # Format data
-    dates = [datetime.strptime(row[0], '%Y-%m-%d') for row in data]
+    dates = [row[0] for row in data]
     ranks = [row[1] for row in data]
 
     # Create chart
@@ -24,7 +24,7 @@ async def get_rank_chart(data: list) -> Image:
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
     plt.ylabel('Classement', fontdict={'fontsize': 20, 'color': CHART_BORDER_COLOR})
     plt.gca().tick_params(axis='y', labelsize=16, colors=CHART_BORDER_COLOR)
-    plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(1))
+    plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True, nbins=10))
     plt.gca().invert_yaxis()
     plt.gca().set_facecolor("none")
     plt.gca().set_alpha(0)
