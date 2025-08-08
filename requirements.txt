@@ -10,6 +10,7 @@ gevent==23.9.1
 greenlet==3.0.0rc3
 grequests==0.7.0
 idna==3.6
+matplotlib<3.10
 multidict==6.0.5
 mysql-connector-python==9.4.0
 numpy==1.26.4

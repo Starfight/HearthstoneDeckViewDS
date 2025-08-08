@@ -3,6 +3,7 @@ import os
 import random
 import base64
 
+from image_creator.rank_placer import place_rank_in_image
 from patch import *
 
 import discord
@@ -10,7 +11,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from db.config import TOKEN, APP_ID, DB_CONFIG
-from framework.local_db import MySQLDatabase
+from framework.mysql_db import MySQLDatabase
 from image_creator import create_picture
 
 client = commands.Bot(command_prefix="/",
@@ -132,11 +133,18 @@ async def code(interaction: discord.Interaction, deck_code: str):
 @app_commands.describe(account="Get account rank")
 async def rank(interaction: discord.Interaction, account: str):
     # get account rank from database
-    rank = await client.db.get_last_rank(account)
-    if rank is None:
-        await interaction.response.send_message(f"Compte {account} non trouvé dans la base de données.")
-    else:
-        await interaction.response.send_message(f":trophy: Dernier classement connu de {account}: {rank}")
+    data = await client.db.get_rank_history(account)
+    if not data:
+        await interaction.response.send_message(f":confounded: Le compte {account} n'est pas encore légende cette saison.")
+        return
+    await interaction.response.send_message(f"_En attente de la génération de l'image... "
+                                            "Elle sera bientôt disponible_")
+    image = await place_rank_in_image(account, data)
+    image.save(f"{account}.png", format="PNG")
+    await interaction.edit_original_response(
+        content=f":trophy: Dernier classement de {account}:",
+        attachments=[discord.File(f"{account}.png")])
+    os.remove(f"{account}.png")
     
 
 @client.command(name='deck')

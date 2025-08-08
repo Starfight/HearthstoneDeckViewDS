@@ -23,6 +23,17 @@ class MySQLDatabase:
                 return result[0]
             else:
                 return None
+            
+    async def get_rank_history(self, accountid):
+        self.conn.reconnect()
+        with self.conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT snapshot_date, rank
+                FROM {TABLE_NAME}
+                WHERE accountid = %s
+                ORDER BY snapshot_date DESC
+            """, (accountid,))
+            return cur.fetchall()
 
     def close(self):
         self.conn.close()
