@@ -3,7 +3,6 @@ import os
 import random
 import base64
 
-from image_creator.rank_placer import place_rank_in_image
 from patch import *
 
 import discord
@@ -13,6 +12,7 @@ from discord.ext import commands
 from db.config import TOKEN, APP_ID, DB_CONFIG
 from framework.mysql_db import MySQLDatabase
 from image_creator import create_picture
+from image_creator.rank_placer import place_rank_in_image
 
 client = commands.Bot(command_prefix="/",
                       application_id=APP_ID,
