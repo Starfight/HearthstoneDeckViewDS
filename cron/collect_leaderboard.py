@@ -17,10 +17,22 @@ DB_CONFIG = {
 }
 
 # API config
-API_URL_TEMPLATE = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=standard&page={page}"
+API_URL_TEMPLATE = "https://hearthstone.blizzard.com/en-us/api/community/leaderboardsData?region=EU&leaderboardId=standard&page={page}&seasonId={season}"
 
 # PostgreSQL table
 TABLE_NAME = "leaderboard_month_history"
+
+def get_season_id():
+    reference_date = date(year=2022, month=10, day=1)
+    reference_season = 108
+    current_date = date.today()
+    # Calculate the number of months that have passed since the reference date
+    months_since_reference = (current_date.year - reference_date.year) * 12 + current_date.month - reference_date.month
+    # Calculate the season ID based on the number of months elapsed
+    current_season = reference_season + months_since_reference
+    return current_season
+
+SEASON_ID=get_season_id()
 
 def create_table_if_not_exists(conn):
     with conn.cursor() as cur:
@@ -35,7 +47,7 @@ def create_table_if_not_exists(conn):
         conn.commit()
 
 def fetch_leaderboard_page(page):
-    url = API_URL_TEMPLATE.format(page=page)
+    url = API_URL_TEMPLATE.format(page=page, season=SEASON_ID)
     resp = requests.get(url)
     if resp.status_code == 200:
         return resp.json()
