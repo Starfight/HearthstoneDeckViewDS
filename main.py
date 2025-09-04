@@ -1,7 +1,6 @@
 import datetime
 import os
 import random
-import base64
 
 from patch import *
 
@@ -11,6 +10,7 @@ from discord.ext import commands
 
 from db.config import TOKEN, APP_ID, DB_CONFIG
 from framework.mysql_db import MySQLDatabase
+from framework.utils import filter_deck_code, filter_account
 from image_creator import create_picture
 from image_creator.rank_placer import place_rank_in_image
 
@@ -20,16 +20,6 @@ client = commands.Bot(command_prefix="/",
                       intents=discord.Intents(43008))
                       #intents=discord.Intents.all())
 
-
-async def filter_deck_code(deck_code):
-    # iterate on deck_code as word separated by space to find a base64 code starting with AA
-    for word in deck_code.split():
-        if word[:2] == "AA":
-            try:
-                base64.b64decode(word)
-            except:
-                continue
-            return word
 
 async def generate_and_save(deck_code):
     image = await create_picture(deck_code)
@@ -133,11 +123,12 @@ async def code(interaction: discord.Interaction, deck_code: str):
 @app_commands.describe(account="Get account rank")
 async def rank(interaction: discord.Interaction, account: str):
     # get account rank from database
+    account = await filter_account(account)
     data = await client.db.get_rank_history(account)
     if not data:
         await interaction.response.send_message(f":confounded: Le compte {account} n'est pas encore légende cette saison.")
         return
-    await interaction.response.send_message(f"_En attente de la génération de l'image... "
+    await interaction.response.send_message("_En attente de la génération de l'image... "
                                             "Elle sera bientôt disponible_")
     image = await place_rank_in_image(account, data)
     image.save(f"{account}.png", format="PNG")
