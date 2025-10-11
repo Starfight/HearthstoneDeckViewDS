@@ -11,7 +11,7 @@ from discord.ext import commands
 from db.config import TOKEN, APP_ID, DB_CONFIG
 from framework.mysql_db import MySQLDatabase
 from framework.utils import filter_deck_code, filter_account
-from image_creator import create_picture
+from image_creator import ImageCreatorFunction
 from image_creator.rank_placer import place_rank_in_image
 
 client = commands.Bot(command_prefix="/",
@@ -21,8 +21,8 @@ client = commands.Bot(command_prefix="/",
                       #intents=discord.Intents.all())
 
 
-async def generate_and_save(deck_code):
-    image = await create_picture(deck_code)
+async def generate_and_save(deck_code, function=ImageCreatorFunction.CREATE_DECK_PICTURE):
+    image = await function(deck_code)
 
     if not image:
         return
@@ -44,8 +44,6 @@ async def on_ready():
     print(client.user.id)
     print(discord.__version__)
     print("------")
-
-    client.db = MySQLDatabase(DB_CONFIG)
 
     try:
         synced = await client.tree.sync()
@@ -122,20 +120,18 @@ async def code(interaction: discord.Interaction, deck_code: str):
 @client.tree.command(name="rank", description="Get account rank")
 @app_commands.describe(account="Get account rank")
 async def rank(interaction: discord.Interaction, account: str):
-    # get account rank from database
-    account = await filter_account(account)
-    data = await client.db.get_rank_history(account)
-    if not data:
-        await interaction.response.send_message(f":confounded: Le compte {account} n'est pas encore légende cette saison.")
-        return
     await interaction.response.send_message("_En attente de la génération de l'image... "
                                             "Elle sera bientôt disponible_")
-    image = await place_rank_in_image(account, data)
-    image.save(f"{account}.png", format="PNG")
+    # get account rank from database
+    account = await filter_account(account)
+    name = await generate_and_save(account, ImageCreatorFunction.CREATE_RANK_PICTURE)
+    if not name:
+        await interaction.response.send_message(f":confounded: Le compte {account} n'est pas encore légende cette saison.")
+        return
     await interaction.edit_original_response(
         content=f":trophy: Dernier classement de {account}:",
-        attachments=[discord.File(f"{account}.png")])
-    os.remove(f"{account}.png")
+        attachments=[discord.File(f"{name}.png")])
+    os.remove(f"{name}.png")
     
 
 @client.command(name='deck')

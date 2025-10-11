@@ -70,13 +70,6 @@ def main():
     conn = mysql.connector.connect(**DB_CONFIG)
     create_table_if_not_exists(conn)
 
-    # Drop data first day of the month
-    if today.day == 1:
-        with conn.cursor() as cur:
-            cur.execute(f"DELETE FROM {TABLE_NAME};")
-            conn.commit()
-            print("Month data deleted!")
-
     # First page to get the total number of pages
     first_page = fetch_leaderboard_page(1)
     total_pages = first_page['leaderboard']['pagination']['totalPages']

@@ -1,12 +1,20 @@
 import asyncio
+from datetime import date
 
 from db.config import TABLE_NAME
 import mysql.connector
 
 class MySQLDatabase:
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(MySQLDatabase, cls).__new__(cls)
+        return cls.instance
+
     def __init__(self, db_config):
-        self.db_config = db_config
-        self.conn = mysql.connector.connect(**db_config)
+        if not hasattr(self, 'db_config_initialized'):
+            self.conn = mysql.connector.connect(**db_config)
+            self.db_config_initialized = True
 
     async def get_last_rank(self, accountid):
         self.conn.reconnect()
@@ -23,16 +31,18 @@ class MySQLDatabase:
                 return result[0]
             else:
                 return None
-            
-    async def get_rank_history(self, accountid):
+
+    async def get_rank_month_history(self, accountid, month=date.today().month, year=date.today().year):
         self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
                 SELECT snapshot_date, rank
                 FROM {TABLE_NAME}
                 WHERE accountid = %s
+                AND MONTH(snapshot_date) = %s
+                AND YEAR(snapshot_date) = %s
                 ORDER BY snapshot_date DESC
-            """, (accountid,))
+            """, (accountid, month, year))
             return cur.fetchall()
 
     def close(self):
