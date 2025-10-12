@@ -9,7 +9,11 @@ from .rank_placer import place_rank_in_image
 
 
 async def create_deck_picture(deck_code):
-    response, deck_class, sideboard, icone = await retrieve_deck(deck_code)
+    try:
+        response, deck_class, sideboard, icone = await retrieve_deck(deck_code)
+    except Exception as e:
+        print(e)
+        return None
     if response == 0:
         return None
 
