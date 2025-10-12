@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+import logging
 
 from patch import *
 
@@ -13,6 +14,16 @@ from framework.mysql_db import MySQLDatabase
 from framework.utils import filter_deck_code, filter_account
 from image_creator import ImageCreatorFunction
 from image_creator.rank_placer import place_rank_in_image
+
+logger = logging.getLogger(__name__)
+# configure basic logger in stream
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 
 client = commands.Bot(command_prefix="/",
                       application_id=APP_ID,
@@ -39,29 +50,29 @@ async def generate_and_save(deck_code, function=ImageCreatorFunction.CREATE_DECK
 
 @client.event
 async def on_ready():
-    print("Logged in as")
-    print(client.user.name)
-    print(client.user.id)
-    print(discord.__version__)
-    print("------")
+    logger.info("Logged in as")
+    logger.info(client.user.name)
+    logger.info(client.user.id)
+    logger.info(discord.__version__)
+    logger.info("------")
 
     try:
         synced = await client.tree.sync()
-        print(f"synced {len(synced)} commands")
-        print("\n\n---------\n\n")
+        logger.info(f"synced {len(synced)} commands")
+        logger.info("\n\n---------\n\n")
     except Exception as e:
-        print("sync error:", e)
+        logger.error("sync error: %s" % e)
 
-    print("Servers connected to:")
+    logger.info("Servers connected to:")
     sum_servers, sum_members = 0, 0
-    print(f"test:{client.guilds}")
+    logger.info(f"test:{client.guilds}")
     for guild in sorted(client.guilds, key=lambda cl: cl.member_count or 0):
         sum_servers += 1
         sum_members += guild.member_count or 0
-        print(guild.name, "-----", guild.member_count, "members")
+        logger.info(f"{guild.name} - {guild.member_count} members")
 
-    print(f"ALL: {sum_servers} servers, {sum_members} members")
-    print("\n\n---------\n\n")
+    logger.info(f"ALL: {sum_servers} servers, {sum_members} members")
+    logger.info("\n\n---------\n\n")
 
 
 @client.tree.command(name="deck", description="Generates picture of deck by"
@@ -162,7 +173,7 @@ async def on_message(message: discord.message.Message):
 
             os.remove(f"{name}.png")
 
-            print(datetime.datetime.now() - start_time)
+            logger.info(datetime.datetime.now() - start_time)
 
 
 client.run(TOKEN)

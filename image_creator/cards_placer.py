@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -6,6 +7,7 @@ from db.font import FONT
 
 from .place_runes import place_runes
 
+logger = logging.getLogger(__name__)
 
 async def place_cards(counters, mana, class_id, deck_cost, response, sideboard, icone):
     default_water = Image.open("labels/x2.png")
@@ -46,7 +48,7 @@ async def place_cards(counters, mana, class_id, deck_cost, response, sideboard, 
             try:
                 im = Image.open(f"zilliax/{response['zilliax']}.png").convert("RGBA")
             except Exception as e:
-                print(e)
+                logger.error(e)
                 im = Image.open(f"{FOLDER}{card}.png").convert("RGBA")
 
         img = np.array(im)

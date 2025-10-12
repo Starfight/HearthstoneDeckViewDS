@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from .card_counter import count_cards
 from .cards_downloader import download_cards
@@ -6,13 +7,13 @@ from .cost_getter import get_cost_of_deck
 from .deck_retriever import retrieve_deck
 from .rank_retriever import get_rank_data_range
 from .rank_placer import place_rank_in_image
-
+logger = logging.getLogger(__name__)
 
 async def create_deck_picture(deck_code):
     try:
         response, deck_class, sideboard, icone = await retrieve_deck(deck_code)
     except Exception as e:
-        print(e)
+        logger.error(e)
         return None
     if response == 0:
         return None

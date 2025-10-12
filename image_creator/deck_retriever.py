@@ -1,14 +1,16 @@
+import logging
 import pprint
 
 from db.config import CLIENT_ID, CLIENT_SECRET, PROXY
 from framework import BlizzardAPI
 
+logger = logging.getLogger(__name__)
 
 async def retrieve_deck(deck_code):
     api = BlizzardAPI(CLIENT_ID, CLIENT_SECRET, proxies=PROXY)
     response = await api.get_from_code(deck_code)
     if "error" in response:
-        print(f"error: {response}")
+        logger.error(f"error: {response}")
         return [0, 0, 0]
 
     duels_class = None
