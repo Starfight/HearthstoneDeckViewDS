@@ -9,11 +9,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from db.config import TOKEN, APP_ID, DB_CONFIG
-from framework.mysql_db import MySQLDatabase
+from db.config import TOKEN, APP_ID
 from framework.utils import filter_deck_code, filter_account
 from image_creator import ImageCreatorFunction
-from image_creator.rank_placer import place_rank_in_image
 
 logger = logging.getLogger(__name__)
 # configure basic logger in stream
@@ -28,7 +26,7 @@ logging.basicConfig(
 client = commands.Bot(command_prefix="/",
                       application_id=APP_ID,
                       activity=discord.Game(name="Analyzing decks"),
-                      intents=discord.Intents(43008))
+                      intents=discord.Intents(43009))
                       #intents=discord.Intents.all())
 
 
@@ -65,7 +63,6 @@ async def on_ready():
 
     logger.info("Servers connected to:")
     sum_servers, sum_members = 0, 0
-    logger.info(f"test:{client.guilds}")
     for guild in sorted(client.guilds, key=lambda cl: cl.member_count or 0):
         sum_servers += 1
         sum_members += guild.member_count or 0
