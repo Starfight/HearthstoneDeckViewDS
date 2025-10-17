@@ -9,8 +9,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from db.config import TOKEN, APP_ID
+from db.config import TOKEN, APP_ID, DB_CONFIG
 from framework.utils import filter_deck_code, filter_account
+from framework.mysql_db import MySQLDatabase
 from image_creator import ImageCreatorFunction
 
 logger = logging.getLogger(__name__)
@@ -128,13 +129,21 @@ async def code(interaction: discord.Interaction, deck_code: str):
 @client.tree.command(name="rank", description="Get account rank")
 @app_commands.describe(account="Get account rank")
 async def rank(interaction: discord.Interaction, account: str):
+    mysql_db = MySQLDatabase(DB_CONFIG)
+    account = await filter_account(account)
+    if not await mysql_db.is_account_exist(account):
+        await interaction.response.send_message(
+            content=f":confounded: Le compte {account} n'est pas encore légende cette saison."
+        )
+        return
     await interaction.response.send_message("_En attente de la génération de l'image... "
                                             "Elle sera bientôt disponible_")
     # get account rank from database
-    account = await filter_account(account)
     name = await generate_and_save(account, ImageCreatorFunction.CREATE_RANK_PICTURE)
     if not name:
-        await interaction.response.send_message(f":confounded: Le compte {account} n'est pas encore légende cette saison.")
+        await interaction.edit_original_response(
+            content=":face_with_spiral_eyes: Erreur lors de la génération de l'image, veuillez réessayer."
+        )
         return
     await interaction.edit_original_response(
         content=f":trophy: Dernier classement de {account}:",

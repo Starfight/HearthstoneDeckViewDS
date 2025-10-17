@@ -16,21 +16,21 @@ class MySQLDatabase:
             self.conn = mysql.connector.connect(**db_config)
             self.db_config_initialized = True
 
-    async def get_last_rank(self, accountid):
+    async def is_account_exist(self, accountid, month=date.today().month, year=date.today().year):
         self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
-                SELECT rank
+                SELECT count(*)
                 FROM {TABLE_NAME}
                 WHERE accountid = %s
-                ORDER BY snapshot_date DESC
-                LIMIT 1
-            """, (accountid,))
+                    AND MONTH(snapshot_date) = %s
+                    AND YEAR(snapshot_date) = %s
+            """, (accountid, month, year))
             result = cur.fetchone()
-            if result:
-                return result[0]
+            if result[0] > 0:
+                return True
             else:
-                return None
+                return False
 
     async def get_rank_month_history(self, accountid, month=date.today().month, year=date.today().year):
         self.conn.reconnect()
