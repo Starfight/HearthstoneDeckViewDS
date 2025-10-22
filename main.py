@@ -12,6 +12,7 @@ from discord.ext import commands
 from db.config import TOKEN, APP_ID, DB_CONFIG
 from framework.utils import filter_deck_code, filter_account
 from framework.mysql_db import MySQLDatabase
+from framework.blizzard_website_api import BlizzardWebsiteAPI
 from image_creator import ImageCreatorFunction
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,9 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+# init MySQLDatabase singleton
+MySQLDatabase(DB_CONFIG)
 
 client = commands.Bot(command_prefix="/",
                       application_id=APP_ID,
@@ -80,7 +84,7 @@ async def on_ready():
 async def deck(interaction: discord.Interaction, deck_code: str):
     await interaction.response.send_message("_En attente de la génération de l'image... "
                                             "Elle sera bientôt disponible_")
-    deck_code = await filter_deck_code(deck_code)
+    deck_code = filter_deck_code(deck_code)
     if not deck_code:
         await interaction.edit_original_response(
             content=":face_with_spiral_eyes: Auncun code de deck trouvé dans le message.")
@@ -107,7 +111,7 @@ async def deck(interaction: discord.Interaction, deck_code: str):
 async def code(interaction: discord.Interaction, deck_code: str):
     await interaction.response.send_message("_En attente de la génération de l'image... "
                                             "Elle sera bientôt disponible_")
-    deck_code = await filter_deck_code(deck_code)
+    deck_code = filter_deck_code(deck_code)
     if not deck_code:
         await interaction.edit_original_response(
             content=":face_with_spiral_eyes: Auncun code de deck trouvé dans le message.")
@@ -129,9 +133,8 @@ async def code(interaction: discord.Interaction, deck_code: str):
 @client.tree.command(name="rank", description="Get account rank")
 @app_commands.describe(account="Get account rank")
 async def rank(interaction: discord.Interaction, account: str):
-    mysql_db = MySQLDatabase(DB_CONFIG)
-    account = await filter_account(account)
-    if not await mysql_db.is_account_exist(account):
+    account = filter_account(account)
+    if not await MySQLDatabase.instance.is_account_exist(account):
         await interaction.response.send_message(
             content=f":confounded: Le compte {account} n'est pas encore légende cette saison."
         )
@@ -150,6 +153,17 @@ async def rank(interaction: discord.Interaction, account: str):
         attachments=[discord.File(f"{name}.png")])
     os.remove(f"{name}.png")
     
+@client.tree.command(name="leaderboard", description="Get leaderboard info")
+async def leaderboard(interaction: discord.Interaction):
+    website_api = BlizzardWebsiteAPI()
+    leaderboard_data = await website_api.get_leaderboard_data()
+    rows = leaderboard_data.get("leaderboard", {}).get("rows", [])
+    top = min(len(rows), 10)
+    content = f"Top {top} des légendes de la saison:\n"
+    for i in range(top):
+        content += f"{rows[i]['rank']}: {rows[i]['accountid']}\n"
+    content += f"Nombre total de légendes: {leaderboard_data.get('leaderboard', {}).get('pagination', {}).get('totalSize', 0)}"
+    await interaction.response.send_message(content)
 
 @client.command(name='deck')
 async def deck(ctx, deck_code):
