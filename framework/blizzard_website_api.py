@@ -1,7 +1,10 @@
 import asyncio
 
+import logging
 import requests
 from framework.utils import get_season_id
+
+logger = logging.getLogger(__name__)
 
 class BlizzardWebsiteAPI:
     def __init__(self,
@@ -25,5 +28,12 @@ class BlizzardWebsiteAPI:
         seasonId=get_season_id()
         ):
         url = f"{self.url}/leaderboardsData?region={region}&leaderboardId={leaderboardId}&page={page}&seasonId={seasonId}"
-        response = self.session.get(url)
-        return response.json()
+        try:
+            response = self.session.get(url)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise Exception(f"Erreur on {url}: {response.status_code}")
+        except Exception as e:
+            logger.error(e)
+        return None

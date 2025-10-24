@@ -157,6 +157,10 @@ async def rank(interaction: discord.Interaction, account: str):
 async def leaderboard(interaction: discord.Interaction):
     website_api = BlizzardWebsiteAPI()
     leaderboard_data = await website_api.get_leaderboard_data()
+    if not leaderboard_data:
+        await interaction.response.send_message(
+            content="Une erreur est survenue lors de la recherche du classement des légendes. Veuillez reessayer plus tard."
+            )
     rows = leaderboard_data.get("leaderboard", {}).get("rows", [])
     top = min(len(rows), 10)
     content = f"Top {top} des légendes de la saison:\n"
