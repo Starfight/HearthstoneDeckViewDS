@@ -16,6 +16,17 @@ async def retrieve_deck(deck_code):
 
     pprint.pp(response)
 
+    icone_main_cards = [card for card in response["cards"] if "bundledCardIds" in card]
+    icone_cards = list()
+    if icone_main_cards:
+        icone_ids = icone_main_cards[0]["bundledCardIds"]
+        for card in response["cards"]:
+            if card["id"] in icone_ids:
+                card["slug"] += "-Icone"
+                icone_cards.append(card)
+            elif card["id"] == icone_main_cards[0]["id"]:
+                card["slug"] += "-icone"
+        response["cards"] = [card for card in response["cards"] if card["id"] not in icone_ids]
     if "sideboardCards" in response:
         for side in response["sideboardCards"]:
             if side['sideboardCard']['id'] == 102983:
@@ -34,4 +45,4 @@ async def retrieve_deck(deck_code):
     for i in sideboard:
         i["slug"] += "-side"
 
-    return response, response["class"]["id"], sideboard
+    return response, response["class"]["id"], sideboard, icone_cards

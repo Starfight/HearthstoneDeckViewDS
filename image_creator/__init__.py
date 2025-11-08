@@ -6,15 +6,15 @@ from .deck_retriever import retrieve_deck
 
 
 async def create_picture(deck_code):
-    response, deck_class, sideboard = await retrieve_deck(deck_code)
+    response, deck_class, sideboard, icone = await retrieve_deck(deck_code)
     if response == 0:
         return None
 
-    await download_cards(response["cards"] + sideboard)
+    await download_cards(response["cards"] + sideboard + icone)
     counters, mana = await count_cards(response["cards"])
 
     cost = await get_cost_of_deck(response["cards"] + sideboard)
 
-    image = await place_cards(counters, mana, deck_class, cost, response, sideboard)
+    image = await place_cards(counters, mana, deck_class, cost, response, sideboard, icone)
 
     return image

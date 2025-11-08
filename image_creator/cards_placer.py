@@ -7,16 +7,16 @@ from db.font import FONT
 from .place_runes import place_runes
 
 
-async def place_cards(counters, mana, class_id, deck_cost, response, sideboard):
+async def place_cards(counters, mana, class_id, deck_cost, response, sideboard, icone):
     default_water = Image.open("labels/x2.png")
 
-    if len(counters) + len(sideboard) <= 18:
+    if len(counters) + len(sideboard)  + len(icone) <= 18:
         size = 500
         water = default_water.resize((214, 121))
-    elif len(counters) + len(sideboard) <= 21:
+    elif len(counters) + len(sideboard)  + len(icone) <= 21:
         size = 428
         water = default_water.resize((180, 91))
-    elif len(counters) + len(sideboard) <= 32:
+    elif len(counters) + len(sideboard)  + len(icone)<= 32:
         size = 375
         water = default_water.resize((141, 80))
     else:
@@ -73,7 +73,15 @@ async def place_cards(counters, mana, class_id, deck_cost, response, sideboard):
                     im.putpixel((i, j), (min(255, r + 100),
                                          min(255, g + 50),
                                          min(255, b + 50), a))
+        if "-Icone" in card:
+            pixels = im.load()
 
+            for i in range(im.size[0]):
+                for j in range(im.size[1]):
+                    r, g, b, a = pixels[i, j]
+                    im.putpixel((i, j), (min(255, r + 100),
+                                         min(255, g + 50),
+                                         min(255, b + 50), a))
         if card in counters and counters[card] >= 2:
             if counters[card] > 2:
                 water = Image.open(f'labels/x{min(counters[card], 9)}.png').resize(water_size)
@@ -96,6 +104,8 @@ async def place_cards(counters, mana, class_id, deck_cost, response, sideboard):
                 if i['sideboardCard']['slug'] == card:
                     stack = [j['slug'] for j in sorted(i['cardsInSideboard'], key=lambda c_: c_['manaCost']) if
                              not j['isZilliaxCosmeticModule']] + stack
+        if "-icone" in card:
+            stack = [j['slug'] for j in sorted(icone, key=lambda c_: c_['manaCost']) if j['slug'] != card] + stack
 
         col += sizes[0]
         if col > 2900:
