@@ -6,17 +6,28 @@ import numpy as np
 from PIL import Image
 
 CHART_DATA_COLOR = '#FF9100'
+CHART_PREVIOUS_COLOR = "#BEBEBE"
 CHART_BORDER_COLOR = '#7E5933'
 
 async def get_rank_chart(data: list) -> Image:
     # Format data
     dates = [row[0] for row in data]
     ranks = [row[1] for row in data]
+    old_ranks = [row[2] for row in data]
 
     # Create chart
     chart = plt.figure(figsize=(15, 7))
     ax = chart.add_subplot(111)
+    ax.plot(dates, old_ranks, 'o', markersize=10, linestyle='--', color=CHART_PREVIOUS_COLOR, linewidth=4)
+    #dashed line
     ax.plot(dates, ranks, 'o', markersize=10, linestyle='-', color=CHART_DATA_COLOR, linewidth=4)
+    #add legend
+    legend = ax.legend(['Classement prédécent', 'Classement actuel'], prop={'size': 20})
+    legend.get_frame().set_alpha(0)
+    for text in legend.get_texts():
+        text.set_color(CHART_BORDER_COLOR)
+        text.set_fontweight('bold')
+        text.set_fontsize(16)
 
     # Configure axes
     ax.set_xlabel('Jour', fontdict={'fontsize': 20, 'color': CHART_BORDER_COLOR})

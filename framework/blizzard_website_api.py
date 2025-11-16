@@ -24,9 +24,9 @@ class BlizzardWebsiteAPI:
     async def get_leaderboard_data(self,
         page=1,
         leaderboardId="standard",
-        region="EU",
-        seasonId=get_season_id()
+        region="EU"
         ):
+        seasonId=get_season_id()
         url = f"{self.url}/leaderboardsData?region={region}&leaderboardId={leaderboardId}&page={page}&seasonId={seasonId}"
         try:
             response = self.session.get(url)

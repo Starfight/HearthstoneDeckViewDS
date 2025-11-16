@@ -16,7 +16,10 @@ class MySQLDatabase:
             self.conn = mysql.connector.connect(**db_config)
             self.db_config_initialized = True
 
-    async def is_account_exist(self, accountid, month=date.today().month, year=date.today().year):
+    async def is_account_exist(self, accountid):
+        # default date
+        month = date.today().month
+        year = date.today().year
         self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
@@ -32,17 +35,27 @@ class MySQLDatabase:
             else:
                 return False
 
-    async def get_rank_month_history(self, accountid, month=date.today().month, year=date.today().year):
+    async def get_rank_month_history(self, accountid):
+        # default date
+        month = date.today().month
+        year = date.today().year
+        # Get the previous month and year
+        previous_month = month - 1 if month > 1 else 12
+        previous_year = year
+        if previous_month == 12:
+            previous_year -= 1
         self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
                 SELECT snapshot_date, rank
                 FROM {TABLE_NAME}
-                WHERE accountid = %s
-                AND MONTH(snapshot_date) = %s
-                AND YEAR(snapshot_date) = %s
-                ORDER BY snapshot_date DESC
-            """, (accountid, month, year))
+                WHERE accountid = %s AND (
+                    (MONTH(snapshot_date) = %s AND YEAR(snapshot_date) = %s)
+                    OR
+                    (MONTH(snapshot_date) = %s AND YEAR(snapshot_date) = %s)
+                )
+                ORDER BY snapshot_date ASC
+            """, (accountid, month, year, previous_month, previous_year))
             return cur.fetchall()
 
     def close(self):
