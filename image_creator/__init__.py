@@ -1,4 +1,5 @@
 import logging
+import traceback
 from enum import Enum
 from .card_counter import count_cards
 from .cards_downloader import download_cards
@@ -14,6 +15,7 @@ async def create_deck_picture(deck_code):
         response, deck_class, sideboard, icone = await retrieve_deck(deck_code)
     except Exception as e:
         logger.error(e)
+        logger.error(traceback.format_exc())
         return None
     if response == 0:
         return None

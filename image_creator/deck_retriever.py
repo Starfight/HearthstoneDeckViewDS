@@ -41,7 +41,7 @@ async def retrieve_deck(deck_code):
             sideboard += side["cardsInSideboard"]
 
     if response["cardCount"] == 30 and len(response["cards"]) < 30:
-        for card_id in response["invalidCardIds"]:
+        for card_id in response.get("invalidCardIds", []):
             response["cards"].append(await api.get_card_from_id(card_id))
 
     for i in sideboard:
