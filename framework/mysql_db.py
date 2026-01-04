@@ -1,38 +1,61 @@
 import asyncio
+from datetime import date
 
 from db.config import TABLE_NAME
 import mysql.connector
 
 class MySQLDatabase:
-    def __init__(self, db_config):
-        self.db_config = db_config
-        self.conn = mysql.connector.connect(**db_config)
 
-    async def get_last_rank(self, accountid):
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(MySQLDatabase, cls).__new__(cls)
+        return cls.instance
+
+    def __init__(self, db_config):
+        if not hasattr(self, 'db_config_initialized'):
+            self.conn = mysql.connector.connect(**db_config)
+            self.db_config_initialized = True
+
+    async def is_account_exist(self, accountid):
+        # default date
+        month = date.today().month
+        year = date.today().year
         self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
-                SELECT rank
+                SELECT count(*)
                 FROM {TABLE_NAME}
                 WHERE accountid = %s
-                ORDER BY snapshot_date DESC
-                LIMIT 1
-            """, (accountid,))
+                    AND MONTH(snapshot_date) = %s
+                    AND YEAR(snapshot_date) = %s
+            """, (accountid, month, year))
             result = cur.fetchone()
-            if result:
-                return result[0]
+            if result[0] > 0:
+                return True
             else:
-                return None
-            
-    async def get_rank_history(self, accountid):
+                return False
+
+    async def get_rank_month_history(self, accountid):
+        # default date
+        month = date.today().month
+        year = date.today().year
+        # Get the previous month and year
+        previous_month = month - 1 if month > 1 else 12
+        previous_year = year
+        if previous_month == 12:
+            previous_year -= 1
         self.conn.reconnect()
         with self.conn.cursor() as cur:
             cur.execute(f"""
                 SELECT snapshot_date, rank
                 FROM {TABLE_NAME}
-                WHERE accountid = %s
-                ORDER BY snapshot_date DESC
-            """, (accountid,))
+                WHERE accountid = %s AND (
+                    (MONTH(snapshot_date) = %s AND YEAR(snapshot_date) = %s)
+                    OR
+                    (MONTH(snapshot_date) = %s AND YEAR(snapshot_date) = %s)
+                )
+                ORDER BY snapshot_date ASC
+            """, (accountid, month, year, previous_month, previous_year))
             return cur.fetchall()
 
     def close(self):
