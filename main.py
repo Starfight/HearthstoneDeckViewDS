@@ -114,7 +114,7 @@ async def code(interaction: discord.Interaction, deck_code: str):
     deck_code = filter_deck_code(deck_code)
     if not deck_code:
         await interaction.edit_original_response(
-            content=":face_with_spiral_eyes: Auncun code de deck trouvé dans le message.")
+            content=":face_with_spiral_eyes: Aucun code de deck trouvé dans le message.")
         return
     name = await generate_and_save(deck_code)
 

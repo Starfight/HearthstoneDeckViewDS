@@ -40,7 +40,7 @@ async def retrieve_deck(deck_code):
                             [i['id'] for i in side["cardsInSideboard"] if i['isZilliaxFunctionalModule']])))
             sideboard += side["cardsInSideboard"]
 
-    if response["cardCount"] == 30 and len(response["cards"]) < 30:
+    if response["cardCount"] == 30 and len(response["cards"])+len(icone_cards) < 30:
         for card_id in response.get("invalidCardIds", []):
             response["cards"].append(await api.get_card_from_id(card_id))
 
