@@ -133,14 +133,17 @@ async def code(interaction: discord.Interaction, deck_code: str):
 @client.tree.command(name="rank", description="Get account rank")
 @app_commands.describe(account="Get account rank")
 async def rank(interaction: discord.Interaction, account: str):
+    await interaction.response.defer()
     account = filter_account(account)
     if not await MySQLDatabase.instance.is_account_exist(account):
-        await interaction.response.send_message(
+        await interaction.followup.send(
             content=f":confounded: Le compte {account} n'est pas encore légende cette saison."
         )
         return
-    await interaction.response.send_message("_En attente de la génération de l'image... "
-                                            "Elle sera bientôt disponible_")
+    await interaction.followup.send(
+        content="_En attente de la génération de l'image... "
+                "Elle sera bientôt disponible_"
+    )
     # get account rank from database
     name = await generate_and_save(account, ImageCreatorFunction.CREATE_RANK_PICTURE)
     if not name:
